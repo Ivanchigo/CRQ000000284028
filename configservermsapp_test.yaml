@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configserver-configmap
+  namespace: testing
+  labels:
+    app: configserver
+data:
+  USERNAME: <<usuario>>
+  URLGIT: http://172.28.77.56:5037/Integracion-TdP/cfg-integracion.git
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: configserver-secret
+  namespace: testing
+  labels:
+    app: configserver
+type: Opaque
+stringData:
+    PASSWORD: <<token del usuario>>
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: configservermsapp
+  namespace: testing
+  labels:
+    app: configserver
+    ocp-app: ms-support
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configserver
+  template:
+    metadata:
+      labels:
+        app: configserver
+        ocp-app: ms-support
+    spec:
+      containers:
+        - name: configservermsapp
+          image: image-registry.openshift-image-registry.svc:5000/testing/configservermsapp:2.0.0
+          ports:
+            - containerPort: 9010
+              protocol: TCP
+          imagePullPolicy: Always
+          env:
+            - name: USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: configserver-configmap
+                  key: USERNAME
+            - name: URLGIT
+              valueFrom:
+                configMapKeyRef:
+                  name: configserver-configmap
+                  key: URLGIT
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: configserver-secret
+                  key: PASSWORD

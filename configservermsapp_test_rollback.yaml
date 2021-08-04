@@ -1,0 +1,27 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: configservermsapp
+  namespace: testing
+  labels:
+    app: configserver
+    ocp-app: ms-support
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configserver
+  template:
+    metadata:
+      labels:
+        app: configserver
+        ocp-app: ms-support
+    spec:
+      containers:
+        - name: configservermsapp
+          image: image-registry.openshift-image-registry.svc:5000/testing/configservermsapp:1.0.0
+          ports:
+            - containerPort: 9010
+              protocol: TCP
+          imagePullPolicy: Always
